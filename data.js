@@ -9,13 +9,13 @@ const lessonData = {
             { word: "play", phonetic: "/pleɪ/", type: "n.", trans: "戏；v. 玩" },
             { word: "loudly", phonetic: "/ˈlaʊdli/", type: "adv.", trans: "大声地" },
             { word: "angry", phonetic: "/ˈæŋɡri/", type: "adj.", trans: "生气的" },
-            { word: "angrily", phonetic: "/ˈæŋɡrɪli/", type: "adv.", trans: "生气地" },
+            { word: "angrily", phonetic: "/ˈæŋrɪli/", type: "adv.", trans: "生气地" },
             { word: "attention", phonetic: "/əˈtenʃən/", type: "n.", trans: "注意" },
             { word: "bear", phonetic: "/beə/", type: "v.", trans: "容忍" },
             { word: "business", phonetic: "/ˈbɪznɪs/", type: "n.", trans: "事，生意" },
             { word: "rudely", phonetic: "/ˈruːdli/", type: "adv.", trans: "无礼地" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "I could not hear the actors. I turned round. I looked at the man and the woman angrily.", notes: ["<b>could not</b>: 过去式，表示当时听不见", "<b>turned round</b>: 转身", "<b>angrily</b>: 修饰动词 looked"]}]
     },
     2: {
         title: "Breakfast or lunch?",
@@ -26,7 +26,7 @@ const lessonData = {
             { word: "aunt", phonetic: "/ɑːnt/", type: "n.", trans: "姑，姨，婶" },
             { word: "repeat", phonetic: "/rɪˈpiːt/", type: "v.", trans: "重复" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "It was one o'clock, but I was still in bed.", notes: ["<b>still</b>: 仍然", "<b>in bed</b>: 卧床（注意不加 the）"]}]
     },
     3: {
         title: "Please send me a card",
@@ -42,7 +42,7 @@ const lessonData = {
             { word: "whole", phonetic: "/həʊl/", type: "adj.", trans: "整个的" },
             { word: "single", phonetic: "/ˈsɪŋɡəl/", type: "adj.", trans: "唯一的，单一的" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "Postcards always spoil my holidays.", notes: ["<b>spoil</b>: 损坏，这里指心情被破坏", "<b>always</b>: 频度副词，放在实义动词前"]}]
     },
     4: {
         title: "An Exciting Trip",
@@ -55,7 +55,7 @@ const lessonData = {
             { word: "abroad", phonetic: "/əˈbrɔːd/", type: "adv.", trans: "在国外" }
         ],
         sections: [
-            { sentence: "I have just received a letter from my brother, Tim.", notes: ["<b>语法点：同位语</b>。Tim 是 my brother 的同位语。"] },
+            { sentence: "I have just received a letter from my brother, Tim.", notes: ["<b>语法点：同位语</b>。Tim 是 my brother 的同位语。", "<b>have just received</b>: 现在完成时"] },
             { sentence: "He is in Australia. He has been there for six months.", notes: ["<b>辨析</b>：has been in (在某地待了多久)。"] }
         ]
     },
@@ -70,7 +70,7 @@ const lessonData = {
             { word: "spare", phonetic: "/speə/", type: "adj.", trans: "多余的" },
             { word: "service", phonetic: "/ˈsɜːvɪs/", type: "n.", trans: "业务，服务" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "In this way, he has begun his own private telephone service.", notes: ["<b>in this way</b>: 通过这种方式", "<b>own</b>: 自己的"]}]
     },
     6: {
         title: "Percy Buttons",
@@ -80,7 +80,7 @@ const lessonData = {
             { word: "pocket", phonetic: "/ˈpɒkɪt/", type: "n.", trans: "衣服口袋" },
             { word: "call", phonetic: "/kɔːl/", type: "v.", trans: "拜访，光顾" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "He has moved from one house to another, knocking at every door.", notes: ["<b>from...to...</b>: 从一个到另一个", "<b>knocking</b>: 伴随动作，敲门"]}]
     },
     7: {
         title: "Too Late",
@@ -98,7 +98,7 @@ const lessonData = {
             { word: "stone", phonetic: "/stəʊn/", type: "n.", trans: "石子" },
             { word: "sand", phonetic: "/sænd/", type: "n.", trans: "沙子" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "The detective was waiting at the airport.", notes: ["<b>was waiting</b>: 过去进行时，强调当时正在等"]}]
     },
     8: {
         title: "The Best and the Worst",
@@ -109,7 +109,7 @@ const lessonData = {
             { word: "wooden", phonetic: "/ˈwʊdən/", type: "adj.", trans: "木制的" },
             { word: "pool", phonetic: "/puːl/", type: "n.", trans: "水池" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "Joe's garden is larger than Bill's.", notes: ["<b>larger than</b>: 比较级", "<b>Bill's</b>: 指代 Bill's garden"]}]
     },
     9: {
         title: "A Cold Welcome",
@@ -122,7 +122,7 @@ const lessonData = {
             { word: "refuse", phonetic: "/rɪˈfjuːz/", type: "v.", trans: "拒绝" },
             { word: "laugh", phonetic: "/lɑːf/", type: "v.", trans: "笑" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "On Wednesday night, we went to the Town Hall.", notes: ["<b>On Wednesday night</b>: 在具体的周三晚上，介词用 on"]}]
     },
     10: {
         title: "Not For Jazz",
@@ -137,6 +137,6 @@ const lessonData = {
             { word: "allow", phonetic: "/əˈlaʊ/", type: "v.", trans: "允许" },
             { word: "touch", phonetic: "/tʌtʃ/", type: "v.", trans: "触摸" }
         ],
-        sections: [{sentence: "笔记补充中...", notes: ["点击右上角确认打卡"]}]
+        sections: [{sentence: "It was damaged by a visitor.", notes: ["<b>was damaged by</b>: 被动语态", "<b>visitor</b>: 访客"]}]
     }
 };
