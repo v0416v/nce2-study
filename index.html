@@ -159,7 +159,26 @@ function renderHome() {
                         ${isDone ? '✓ 已打卡' : '确认打卡'}
                     </button>
                 </div>`;
+// 找到 showDetail 函数中原本插入单词表 HTML 的下方位置
 
+// --- 新增：原文与译文渲染 ---
+if (data.textEn && data.textCn) {
+    html += `
+    <div class="mb-8 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm">
+        <h3 class="text-sm font-bold text-indigo-600 mb-3 flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            课文原文 & 译文
+        </h3>
+        <div class="space-y-4">
+            <div>
+                <p class="text-slate-800 font-serif leading-relaxed text-sm selection:bg-indigo-100">${data.textEn}</p>
+            </div>
+            <div class="pt-4 border-t border-indigo-100/50">
+                <p class="text-slate-500 text-xs leading-relaxed">${data.textCn}</p>
+            </div>
+        </div>
+    </div>`;
+}
             // 单词表渲染（带发音按钮）
             if (data.words && data.words.length > 0) {
                 html += `
@@ -190,26 +209,7 @@ function renderHome() {
                     </table>
                 </div>`;
             }
-// 找到 showDetail 函数中原本插入单词表 HTML 的下方位置
 
-// --- 新增：原文与译文渲染 ---
-if (data.textEn && data.textCn) {
-    html += `
-    <div class="mb-8 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm">
-        <h3 class="text-sm font-bold text-indigo-600 mb-3 flex items-center">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            课文原文 & 译文
-        </h3>
-        <div class="space-y-4">
-            <div>
-                <p class="text-slate-800 font-serif leading-relaxed text-sm selection:bg-indigo-100">${data.textEn}</p>
-            </div>
-            <div class="pt-4 border-t border-indigo-100/50">
-                <p class="text-slate-500 text-xs leading-relaxed">${data.textCn}</p>
-            </div>
-        </div>
-    </div>`;
-}
             // 笔记渲染
             html += `<div class="space-y-6">`;
             if(data.sections) {
