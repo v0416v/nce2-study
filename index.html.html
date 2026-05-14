@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NCE2 云同步打卡助手</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .lesson-card.completed { border-color: #10b981; background: #f0fdf4; }
+        .hidden { display: none; }
+        body { -webkit-tap-highlight-color: transparent; }
+        .animate-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <header class="bg-slate-800 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 class="text-lg font-bold">NCE2 云助手</h1>
+            <div id="sync-status" class="text-[10px] text-emerald-400 font-mono">正在连接云端...</div>
+        </div>
+        <button onclick="logout()" class="text-[10px] bg-slate-700 px-3 py-1 rounded-full border border-slate-600">切换账号</button>
+    </header>
+
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-6 hidden">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
+            <div class="text-4xl mb-4">🚀</div>
+            <h2 class="text-xl font-bold mb-2">欢迎回来</h2>
+            <p class="text-gray-400 text-xs mb-6">输入学习暗号，多端同步进度</p>
+            <input type="text" id="user-secret" placeholder="例如: study_2026" class="w-full border-2 border-slate-100 rounded-xl p-3 mb-4 outline-none focus:border-indigo-500 text-center font-bold text-lg">
+            <button onclick="login()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold active:scale-95 transition">进入系统</button>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto p-4 mt-2">
+        <div class="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-slate-100">
+            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-2 uppercase">
+                <span>Overall Progress</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-emerald-500 transition-all duration-700" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div id="home-view" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
+
+        <div id="detail-view" class="hidden animate-in">
+            <button onclick="showHome()" class="mb-5 text-indigo-600 font-bold flex items-center text-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 返回课程表
+            </button>
+            <div id="detail-content" class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100"></div>
+        </div>
+    </main>
+
+    <script>
+        // ======= 🛠 填入你的 Supabase 信息 =======
+        const SUPABASE_URL = 'https://nblwcljnherlbhngeabw.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibHdjbGpuaGVybGJobmdlYWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzY5MDAsImV4cCI6MjA5NDMxMjkwMH0.ngx8sAJxxz2GFk3jWJDeaKDzq5nWfYBY1im1gAPkGfI'; 
+        
+        // 正确初始化 Supabase
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ======= 📖 录入你的笔记数据 =======
+        const lessonData = {
+            4: {
+                title: "An Exciting Trip",
+                sections: [
+                    { sentence: "I have just received a letter from my brother, Tim.", notes: ["<b>语法点：同位语</b>。Tim 是 my brother 的同位语，补充说明哥哥的名字。","<b>时态</b>：现在完成时（just 是标志词）。"] },
+                    { sentence: "He is in Australia. He has been there for six months.", notes: ["<b>辨析</b>：has been in (在某地待了多久) vs has gone to (去了某地未回)。","<b>语法点</b>：for + 时间段（与现在完成时连用）。"] },
+                    { sentence: "Tim is an engineer. He is working for a big firm and he has already visited a great number of different places in Australia.", notes: ["<b>短语解析</b>：work for (为...工作) / work in (在某地工作)。","<b>短语</b>：a great number of (大量的，接可数复数)。"] },
+                    { sentence: "He has just bought an Australian car and has gone to Alice Springs, a small town in the centre of Australia.", notes: ["<b>has gone to</b>：去了没回来。","<b>同位语</b>：a small town... 是对 Alice Springs 的补充说明。"] },
+                    { sentence: "He will soon visit Darwin. From there, he will fly to Perth.", notes: ["<b>语法</b>：一般将来时（will + 动词原形）。","<b>fly to Perth</b> = go to Perth by air。"] },
+                    { sentence: "My brother has never been abroad before, so he is finding this trip very exciting.", notes: ["<b>结构</b>：find + 宾语 + 形容词（宾补）。","<b>注意</b>：口语中 find 常用于进行时表示当下的感受。"] }
+                ]
+            }
+        };
+
+        let currentUser = localStorage.getItem('nce2_user_secret');
+        let completedLessons = [];
+
+        async function init() {
+            if (!currentUser) {
+                document.getElementById('auth-overlay').classList.remove('hidden');
+            } else {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                await fetchProgress();
+                renderHome();
+            }
+        }
+
+        async function fetchProgress() {
+            document.getElementById('sync-status').innerText = "☁️ 同步中...";
+            try {
+                const { data, error } = await _supabase
+                    .from('learning_progress')
+                    .select('lesson_id')
+                    .eq('user_id', currentUser);
+                
+                if (!error) {
+                    completedLessons = data.map(item => item.lesson_id);
+                    updateStats();
+                } else {
+                    document.getElementById('sync-status').innerText = "❌ 同步失败";
+                }
+            } catch (err) {
+                document.getElementById('sync-status').innerText = "❌ 连接异常";
+            }
+        }
+
+        function updateStats() {
+            const percent = Math.round((completedLessons.length / 96) * 100);
+            document.getElementById('progress-percent').innerText = percent + '%';
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('sync-status').innerText = `✅ 已同步 (已学 ${completedLessons.length} 课)`;
+        }
+
+        function renderHome() {
+            const home = document.getElementById('home-view');
+            home.innerHTML = '';
+            for (let i = 1; i <= 96; i++) {
+                const isDone = completedLessons.includes(i);
+                home.innerHTML += `
+                    <div onclick="showDetail(${i})" class="lesson-card p-4 rounded-2xl border-2 bg-white flex flex-col items-center transition-all active:scale-90 cursor-pointer ${isDone ? 'completed border-emerald-500 shadow-sm' : 'border-slate-100'}">
+                        <span class="text-[10px] text-slate-400 font-bold">L${i}</span>
+                        <div class="w-3 h-3 mt-2 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-slate-100'}"></div>
+                    </div>
+                `;
+            }
+        }
+
+        async function showDetail(id) {
+            const data = lessonData[id] || { title: `Lesson ${id}`, sections: [{sentence: "笔记补充中...", notes: ["请在代码 lessonData 处增加该课内容"]}]};
+            const isDone = completedLessons.includes(id);
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('detail-view').classList.remove('hidden');
+            window.scrollTo(0,0);
+
+            let html = `<div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
+                    <p class="text-indigo-500 font-medium text-sm">${data.title}</p>
+                </div>
+                <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all active:scale-95 ${isDone ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}">
+                    ${isDone ? '✓ 已打卡' : '确认打卡'}
+                </button>
+            </div><div class="space-y-6">`;
+
+            data.sections.forEach(sec => {
+                html += `<div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400 shadow-sm">
+                    <p class="text-slate-800 italic font-serif mb-2 leading-relaxed">"${sec.sentence}"</p>
+                    ${sec.notes.map(n => `<p class="text-xs text-slate-500 mt-2 flex items-start"><span class="mr-2 text-indigo-300">•</span><span>${n}</span></p>`).join('')}
+                </div>`;
+            });
+            document.getElementById('detail-content').innerHTML = html + `</div>`;
+        }
+
+        async function toggleDone(id) {
+            const btn = document.getElementById('check-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "请求中...";
+            btn.disabled = true;
+            
+            try {
+                if (completedLessons.includes(id)) {
+                    await _supabase.from('learning_progress').delete().eq('user_id', currentUser).eq('lesson_id', id);
+                    completedLessons = completedLessons.filter(l => l !== id);
+                } else {
+                    await _supabase.from('learning_progress').insert([{ user_id: currentUser, lesson_id: id }]);
+                    completedLessons.push(id);
+                }
+                showDetail(id);
+                updateStats();
+            } catch (e) {
+                alert("打卡失败，请检查网络或暗号！");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function login() {
+            const val = document.getElementById('user-secret').value.trim();
+            if(val) { 
+                currentUser = val; 
+                localStorage.setItem('nce2_user_secret', val); 
+                init(); 
+            }
+        }
+
+        function logout() { 
+            localStorage.removeItem('nce2_user_secret'); 
+            location.reload(); 
+        }
+
+        function showHome() {
+            document.getElementById('home-view').classList.remove('hidden');
+            document.getElementById('detail-view').classList.add('hidden');
+            renderHome();
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>
