@@ -133,31 +133,61 @@
         }
 
         async function showDetail(id) {
-            const data = lessonData[id] || { title: `Lesson ${id}`, sections: [{sentence: "笔记补充中...", notes: ["请在代码 lessonData 处增加该课内容"]}]};
+            // 从 data.js 的 lessonData 中获取数据
+            const data = lessonData[id] || { title: `Lesson ${id}`, sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中添加内容"]}]};
             const isDone = completedLessons.includes(id);
+            
             document.getElementById('home-view').classList.add('hidden');
             document.getElementById('detail-view').classList.remove('hidden');
             window.scrollTo(0,0);
 
-            let html = `<div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
-                    <p class="text-indigo-500 font-medium text-sm">${data.title}</p>
-                </div>
-                <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all active:scale-95 ${isDone ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}">
-                    ${isDone ? '✓ 已打卡' : '确认打卡'}
-                </button>
-            </div><div class="space-y-6">`;
-
-            data.sections.forEach(sec => {
-                html += `<div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400 shadow-sm">
-                    <p class="text-slate-800 italic font-serif mb-2 leading-relaxed">"${sec.sentence}"</p>
-                    ${sec.notes.map(n => `<p class="text-xs text-slate-500 mt-2 flex items-start"><span class="mr-2 text-indigo-300">•</span><span>${n}</span></p>`).join('')}
+            // 1. 渲染头部
+            let html = `
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
+                        <p class="text-indigo-500 font-medium text-sm">${data.title}</p>
+                    </div>
+                    <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all active:scale-95 ${isDone ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'}">
+                        ${isDone ? '✓ 已打卡' : '确认打卡'}
+                    </button>
                 </div>`;
+
+            // 2. 插入单词表 (如果 data.js 里有 words 字段)
+            if (data.words && data.words.length > 0) {
+                html += `
+                <div class="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+                    <table class="w-full text-left border-collapse bg-white text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase">
+                                <th class="p-3 font-semibold">单词</th>
+                                <th class="p-3 font-semibold text-right text-slate-500">释义</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.words.map(w => `
+                                <tr class="border-t border-slate-50">
+                                    <td class="p-3 font-bold text-slate-800">${w.word}<br><span class="text-[10px] text-slate-400 font-normal font-mono">${w.phonetic}</span></td>
+                                    <td class="p-3 text-right text-slate-500 italic text-xs">${w.type} ${w.trans}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            }
+
+            // 3. 渲染笔记部分
+            html += `<div class="space-y-6">`;
+            data.sections.forEach(sec => {
+                html += `
+                    <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400 shadow-sm">
+                        <p class="text-slate-800 italic font-serif mb-2 leading-relaxed">"${sec.sentence}"</p>
+                        ${sec.notes.map(n => `<p class="text-xs text-slate-500 mt-2 flex items-start"><span class="mr-2 text-indigo-300">•</span><span>${n}</span></p>`).join('')}
+                    </div>`;
             });
+            
             document.getElementById('detail-content').innerHTML = html + `</div>`;
         }
-
         async function toggleDone(id) {
             const btn = document.getElementById('check-btn');
             const originalText = btn.innerText;
