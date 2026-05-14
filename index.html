@@ -7,18 +7,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .lesson-card.completed { border-color: #10b981; background: #f0fdf4; }
+        .lesson-card { cursor: pointer; transition: all 0.2s; }
+        .lesson-card.completed { border-color: #10b981; background: #f0fdf4; color: #059669; }
         .hidden { display: none; }
         body { -webkit-tap-highlight-color: transparent; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-           .speaker-icon { 
+        .speaker-icon { 
             cursor: pointer; 
             display: inline-flex; 
             align-items: center; 
             margin-left: 6px; 
             color: #6366f1; 
-            transition: transform 0.1s;}
+            transition: transform 0.1s;
+        }
         .speaker-icon:active { transform: scale(1.2); }
     </style>
 </head>
@@ -73,21 +75,16 @@
         let currentUser = localStorage.getItem('nce2_user_secret');
         let completedLessons = [];
 
-       function speak(text) {
-    // type=1 是英音，type=2 是美音（新概念英语通常建议英音，可根据喜好修改）
-    const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
-    const audio = new Audio(audioUrl);
-    
-    // 播放音频
-    audio.play().catch(e => {
-        console.error("发音播放失败:", e);
-        // 如果有道接口失效，可以备选回退到系统语音
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-US';
-        window.speechSynthesis.speak(msg);
-    });
-
+        function speak(text) {
+            const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
+            const audio = new Audio(audioUrl);
+            audio.play().catch(e => {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            });
         }
+
         async function init() {
             if (!currentUser) {
                 document.getElementById('auth-overlay').classList.remove('hidden');
@@ -130,27 +127,16 @@
             for (let i = 1; i <= 96; i++) {
                 const isDone = completedLessons.includes(i);
                 home.innerHTML += `
-                    <div onclick="showDetail(${i})" // 修改后的表格行渲染部分
-// 在 showDetail 函数生成的 HTML 字符串中
-<td class="p-3 font-bold text-slate-800">
-    <div class="flex items-center">
-        <span>${w.word}</span>
-        <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="ml-2 text-indigo-500 active:scale-125 transition-transform">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-    </div>
-    <span class="text-[10px] text-slate-400 font-normal font-mono">${w.phonetic}</span>
-</td></div>
+                    <div onclick="showDetail(${i})" class="lesson-card p-4 rounded-2xl border-2 border-slate-100 text-center shadow-sm hover:border-indigo-200 ${isDone ? 'completed' : 'bg-white text-slate-400'}">
+                        <div class="text-xs font-mono mb-1">L${i}</div>
+                        <div class="text-[10px] font-bold truncate">${(typeof lessonData !== 'undefined' && lessonData[i]) ? lessonData[i].title.split(' ')[0] : '...'}</div>
                     </div>
                 `;
             }
         }
 
         async function showDetail(id) {
-            // 获取数据，若缺失则提供默认值防止报错
-            const data = (typeof lessonData !== 'undefined' && lessonData[id]) ? lessonData[id] : { title: `Lesson ${id}`, sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中补充笔记"]}]};
+            const data = (typeof lessonData !== 'undefined' && lessonData[id]) ? lessonData[id] : { title: `Lesson ${id}`, words: [], sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中补充该课内容"]}]};
             const isDone = completedLessons.includes(id);
             
             document.getElementById('home-view').classList.add('hidden');
@@ -168,7 +154,7 @@
                     </button>
                 </div>`;
 
-            // 单词表渲染
+            // 单词表渲染（带发音按钮）
             if (data.words && data.words.length > 0) {
                 html += `
                 <div class="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
@@ -182,7 +168,15 @@
                         <tbody>
                             ${data.words.map(w => `
                                 <tr class="border-t border-slate-50">
-                                    <td class="p-3 font-bold text-slate-800">${w.word}<br><span class="text-[10px] text-slate-400 font-normal font-mono">${w.phonetic}</span></td>
+                                    <td class="p-3">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-slate-800">${w.word}</span>
+                                            <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="speaker-icon">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            </button>
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 font-mono">${w.phonetic}</div>
+                                    </td>
                                     <td class="p-3 text-right text-slate-500 italic text-xs">${w.type} ${w.trans}</td>
                                 </tr>
                             `).join('')}
@@ -207,10 +201,8 @@
 
         async function toggleDone(id) {
             const btn = document.getElementById('check-btn');
-            const originalText = btn.innerText;
             btn.innerText = "请求中...";
             btn.disabled = true;
-            
             try {
                 if (completedLessons.includes(id)) {
                     await _supabase.from('learning_progress').delete().eq('user_id', currentUser).eq('lesson_id', id);
@@ -222,31 +214,18 @@
                 showDetail(id);
                 updateStats();
             } catch (e) {
-                alert("操作失败，请检查网络！");
-                btn.innerText = originalText;
-                btn.disabled = false;
+                alert("操作失败！");
+                showDetail(id);
             }
         }
 
         function login() {
             const val = document.getElementById('user-secret').value.trim();
-            if(val) { 
-                currentUser = val; 
-                localStorage.setItem('nce2_user_secret', val); 
-                init(); 
-            }
+            if(val) { currentUser = val; localStorage.setItem('nce2_user_secret', val); init(); }
         }
 
-        function logout() { 
-            localStorage.removeItem('nce2_user_secret'); 
-            location.reload(); 
-        }
-
-        function showHome() {
-            document.getElementById('home-view').classList.remove('hidden');
-            document.getElementById('detail-view').classList.add('hidden');
-            renderHome();
-        }
+        function logout() { localStorage.removeItem('nce2_user_secret'); location.reload(); }
+        function showHome() { document.getElementById('home-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); renderHome(); }
 
         init();
     </script>
