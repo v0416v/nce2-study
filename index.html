@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <script src="data.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NCE2 云同步打卡助手</title>
@@ -56,14 +55,13 @@
         </div>
     </main>
 
+    <script src="data.js"></script>
+
     <script>
-        // ======= 🛠 填入你的 Supabase 信息 =======
         const SUPABASE_URL = 'https://nblwcljnherlbhngeabw.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibHdjbGpuaGVybGJobmdlYWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzY5MDAsImV4cCI6MjA5NDMxMjkwMH0.ngx8sAJxxz2GFk3jWJDeaKDzq5nWfYBY1im1gAPkGfI'; 
         
-        // 正确初始化 Supabase
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         let currentUser = localStorage.getItem('nce2_user_secret');
         let completedLessons = [];
 
@@ -118,15 +116,14 @@
         }
 
         async function showDetail(id) {
-            // 从 data.js 的 lessonData 中获取数据
-            const data = lessonData[id] || { title: `Lesson ${id}`, sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中添加内容"]}]};
+            // 获取数据，若缺失则提供默认值防止报错
+            const data = (typeof lessonData !== 'undefined' && lessonData[id]) ? lessonData[id] : { title: `Lesson ${id}`, sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中补充笔记"]}]};
             const isDone = completedLessons.includes(id);
             
             document.getElementById('home-view').classList.add('hidden');
             document.getElementById('detail-view').classList.remove('hidden');
             window.scrollTo(0,0);
 
-            // 1. 渲染头部
             let html = `
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -138,7 +135,7 @@
                     </button>
                 </div>`;
 
-            // 2. 插入单词表 (如果 data.js 里有 words 字段)
+            // 单词表渲染
             if (data.words && data.words.length > 0) {
                 html += `
                 <div class="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
@@ -161,18 +158,20 @@
                 </div>`;
             }
 
-            // 3. 渲染笔记部分
+            // 笔记渲染
             html += `<div class="space-y-6">`;
-            data.sections.forEach(sec => {
-                html += `
-                    <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400 shadow-sm">
-                        <p class="text-slate-800 italic font-serif mb-2 leading-relaxed">"${sec.sentence}"</p>
-                        ${sec.notes.map(n => `<p class="text-xs text-slate-500 mt-2 flex items-start"><span class="mr-2 text-indigo-300">•</span><span>${n}</span></p>`).join('')}
-                    </div>`;
-            });
-            
+            if(data.sections) {
+                data.sections.forEach(sec => {
+                    html += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400 shadow-sm">
+                            <p class="text-slate-800 italic font-serif mb-2 leading-relaxed">"${sec.sentence}"</p>
+                            ${sec.notes.map(n => `<p class="text-xs text-slate-500 mt-2 flex items-start"><span class="mr-2 text-indigo-300">•</span><span>${n}</span></p>`).join('')}
+                        </div>`;
+                });
+            }
             document.getElementById('detail-content').innerHTML = html + `</div>`;
         }
+
         async function toggleDone(id) {
             const btn = document.getElementById('check-btn');
             const originalText = btn.innerText;
@@ -190,7 +189,7 @@
                 showDetail(id);
                 updateStats();
             } catch (e) {
-                alert("打卡失败，请检查网络或暗号！");
+                alert("操作失败，请检查网络！");
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
@@ -216,7 +215,6 @@
             renderHome();
         }
 
-        // 启动应用
         init();
     </script>
 </body>
