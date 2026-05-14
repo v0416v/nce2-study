@@ -73,6 +73,21 @@
         let currentUser = localStorage.getItem('nce2_user_secret');
         let completedLessons = [];
 
+       function speak(text) {
+    // type=1 是英音，type=2 是美音（新概念英语通常建议英音，可根据喜好修改）
+    const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
+    const audio = new Audio(audioUrl);
+    
+    // 播放音频
+    audio.play().catch(e => {
+        console.error("发音播放失败:", e);
+        // 如果有道接口失效，可以备选回退到系统语音
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+    });
+
+        }
         async function init() {
             if (!currentUser) {
                 document.getElementById('auth-overlay').classList.remove('hidden');
@@ -115,9 +130,19 @@
             for (let i = 1; i <= 96; i++) {
                 const isDone = completedLessons.includes(i);
                 home.innerHTML += `
-                    <div onclick="showDetail(${i})" class="lesson-card p-4 rounded-2xl border-2 bg-white flex flex-col items-center transition-all active:scale-90 cursor-pointer ${isDone ? 'completed border-emerald-500 shadow-sm' : 'border-slate-100'}">
-                        <span class="text-[10px] text-slate-400 font-bold">L${i}</span>
-                        <div class="w-3 h-3 mt-2 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-slate-100'}"></div>
+                    <div onclick="showDetail(${i})" // 修改后的表格行渲染部分
+// 在 showDetail 函数生成的 HTML 字符串中
+<td class="p-3 font-bold text-slate-800">
+    <div class="flex items-center">
+        <span>${w.word}</span>
+        <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="ml-2 text-indigo-500 active:scale-125 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+    <span class="text-[10px] text-slate-400 font-normal font-mono">${w.phonetic}</span>
+</td></div>
                     </div>
                 `;
             }
