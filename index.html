@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <div id="home-view" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
+<div id="home-view" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 
         <div id="detail-view" class="hidden animate-in">
             <button onclick="showHome()" class="mb-5 text-indigo-600 font-bold flex items-center text-sm">
@@ -121,19 +121,25 @@
             document.getElementById('sync-status').innerText = `✅ 已同步 (已学 ${completedLessons.length} 课)`;
         }
 
-        function renderHome() {
-            const home = document.getElementById('home-view');
-            home.innerHTML = '';
-            for (let i = 1; i <= 96; i++) {
-                const isDone = completedLessons.includes(i);
-                home.innerHTML += `
-                    <div onclick="showDetail(${i})" class="lesson-card p-4 rounded-2xl border-2 border-slate-100 text-center shadow-sm hover:border-indigo-200 ${isDone ? 'completed' : 'bg-white text-slate-400'}">
-                        <div class="text-xs font-mono mb-1">L${i}</div>
-                        <div class="text-[10px] font-bold truncate">${(typeof lessonData !== 'undefined' && lessonData[i]) ? lessonData[i].title.split(' ')[0] : '...'}</div>
-                    </div>
-                `;
-            }
-        }
+function renderHome() {
+    const home = document.getElementById('home-view');
+    home.innerHTML = '';
+    for (let i = 1; i <= 96; i++) {
+        const isDone = completedLessons.includes(i);
+        // 这里是核心修改点：
+        // 1. 去掉了 truncate（防止标题显示为...）
+        // 2. 增加了 min-h-[100px]（确保框框足够高）
+        // 3. 将 text-[10px] 改为 text-xs（让标题稍微大一点点）
+        home.innerHTML += `
+            <div onclick="showDetail(${i})" class="lesson-card p-4 rounded-2xl border-2 border-slate-100 text-center shadow-sm hover:border-indigo-200 flex flex-col justify-center min-h-[110px] ${isDone ? 'completed' : 'bg-white text-slate-400'}">
+                <div class="text-[10px] font-mono mb-1 text-slate-400">Lesson ${i}</div>
+                <div class="text-xs font-bold leading-tight text-slate-700 px-1">
+                    ${(typeof lessonData !== 'undefined' && lessonData[i]) ? lessonData[i].title : '...'}
+                </div>
+            </div>
+        `;
+    }
+}
 
         async function showDetail(id) {
             const data = (typeof lessonData !== 'undefined' && lessonData[id]) ? lessonData[id] : { title: `Lesson ${id}`, words: [], sections: [{sentence: "内容准备中...", notes: ["请在 data.js 中补充该课内容"]}]};
