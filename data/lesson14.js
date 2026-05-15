@@ -1,5 +1,7 @@
 window.currentLessonData = {
     "title": "Do you speak English?",
+    "textEn": "I had an amusing experience in France. I did not speak French and a young man did not speak English. We communicated by gestures.",
+    "textCn": "我在法国有一次有趣的经历。我不会法语，那个人不会英语，我们只能用手势交流。",
     "words": [
         {
             "word": "amusing",
