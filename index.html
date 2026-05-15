@@ -99,24 +99,29 @@
             }
         }
 
-        async function fetchProgress() {
-            document.getElementById('sync-status').innerText = "☁️ 同步中...";
-            try {
-                const { data, error } = await _supabase
-                    .from('learning_progress')
-                    .select('lesson_id')
-                    .eq('user_id', currentUser);
-                
-                if (!error) {
-                    completedLessons = data.map(item => item.lesson_id);
-                    updateStats();
-                } else {
-                    document.getElementById('sync-status').innerText = "❌ 同步失败";
-                }
-            } catch (err) {
-                document.getElementById('sync-status').innerText = "❌ 连接异常";
-            }
+      async function fetchProgress() {
+    document.getElementById('sync-status').innerText = "☁️ 同步中...";
+    try {
+        // 同时获取进度和用户设置
+        const [progressRes, settingsRes] = await Promise.all([
+            _supabase.from('learning_progress').select('lesson_id').eq('user_id', currentUser),
+            _supabase.from('user_settings').select('weekly_goal').eq('user_id', currentUser).maybeSingle()
+        ]);
+
+        if (!progressRes.error) {
+            completedLessons = progressRes.data.map(item => item.lesson_id);
         }
+
+        // 如果云端有设置，就使用云端的每周目标
+        if (!settingsRes.error && settingsRes.data) {
+            weeklyGoal = settingsRes.data.weekly_goal;
+        }
+
+        updateStats();
+    } catch (err) {
+        document.getElementById('sync-status').innerText = "❌ 同步失败";
+    }
+}
 
         function updateStats() {
             const percent = Math.round((completedLessons.length / 96) * 100);
@@ -137,19 +142,31 @@
             return groups;
         }
 
-        function setWeeklyGoal() {
-            const num = prompt("你计划每周学习几课？", weeklyGoal);
-            if (num && !isNaN(num)) {
-                const val = parseInt(num);
-                if (val > 0 && val <= 96) {
-                    weeklyGoal = val;
-                    localStorage.setItem('nce2_weekly_goal', weeklyGoal);
-                    renderHome();
-                } else {
-                    alert("请输入 1 到 96 之间的数字");
-                }
+        
+       async function setWeeklyGoal() {
+    const num = prompt("你计划每周学习几课？", weeklyGoal);
+    if (num && !isNaN(num)) {
+        const val = parseInt(num);
+        if (val > 0 && val <= 96) {
+            weeklyGoal = val;
+            renderHome(); // 立即更新本地 UI
+
+            // 同步到云端数据库
+            const { error } = await _supabase
+                .from('user_settings')
+                .upsert({ 
+                    user_id: currentUser, 
+                    weekly_goal: val,
+                    updated_at: new Date() 
+                });
+
+            if (error) {
+                console.error("同步失败:", error);
+                alert("云端更新失败，请检查网络");
             }
         }
+    }
+}
 
         function renderHome() {
             const home = document.getElementById('home-view');
