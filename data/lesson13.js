@@ -1,5 +1,7 @@
 window.currentLessonData = {
     "title": "The Greenwood Boys",
+    "textEn": "The Greenwood Boys are a group of pop singers. At present, they are visiting all parts of the country. They will arrive in London tomorrow. They will give five performances in London. Fans will be waiting for them at the station.",
+    "textCn": "格林伍德男孩是一支流行歌手组合。目前他们正在全国各地巡回演出。他们明天将到达伦敦，并将在伦敦举行五场演出。歌迷们将在车站等候他们。",
     "words": [
         {
             "word": "group",
@@ -34,11 +36,17 @@ window.currentLessonData = {
     ],
     "sections": [
         {
-            "sentence": "They will be coming by train and most of the young people in the town will be meeting them at the station.",
+            "sentence": "The Greenwood Boys are a group of pop singers.",
             "notes": [
-                "<b>will be coming</b>: 将来进行时，表示按计划将要发生的动作",
-                "<b>most of the young people</b>: 大部分年轻人",
-                "<b>meeting them at the station</b>: 去车站接他们"
+                "<b>group of</b>: 一组……",
+                "<b>pop singers</b>: 流行歌手"
+            ]
+        },
+        {
+            "sentence": "Fans will be waiting for them at the station.",
+            "notes": [
+                "<b>will be waiting</b>: 将来进行时",
+                "<b>wait for</b>: 等待"
             ]
         }
     ]
