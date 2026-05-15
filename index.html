@@ -60,7 +60,7 @@
         <div id="home-view" class="flex flex-col space-y-6"></div>
 
         <div id="detail-view" class="hidden animate-in">
-            <button onclick="showHome()" class="mb-5 text-indigo-600 font-bold flex items-center text-sm">
+<button onclick="showHome()" class="mb-5 text-indigo-600 font-bold flex items-center text-sm">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 返回课程表
             </button>
             <div id="detail-content" class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100"></div>
@@ -79,24 +79,29 @@
         let completedLessons = [];
         let weeklyGoal = parseInt(localStorage.getItem('nce2_weekly_goal')) || 7;
 
-        function speak(text) {
-    // 如果有正在播放的音频，立即停止并销毁
+       function speak(text) {
+    // 强制停止并清理旧音频
     if (currentAudio) {
         currentAudio.pause();
+        currentAudio.src = ""; // 强制断开音频源链接
+        currentAudio.load();   // 强制重置
         currentAudio = null;
     }
 
+    // 如果文本为空则只执行停止操作
+    if (!text) return;
+
     const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
     const audio = new Audio(audioUrl);
-    currentAudio = audio; // 记录当前音频
+    currentAudio = audio;
 
     audio.play().catch(e => {
+        // 退而求其次使用系统语音
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-US';
         window.speechSynthesis.speak(msg);
     });
 }
-
         async function init() {
             if (!currentUser) {
                 document.getElementById('auth-overlay').classList.remove('hidden');
@@ -238,15 +243,12 @@
         }
 
 async function showDetail(id) {
-    // 切换课程时停止音频播放
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
+    speak(); // 切换新课前，先把旧课的声音关了
 
     window.scrollTo(0, 0);
     if (!lessonIndex[id]) return;
-    // ... 后面的逻辑保持不变
+    // ... 后面加载 script 的逻辑保持不变
+    
     // --- 核心修复：创建并配置脚本加载 ---
     const script = document.createElement('script');
     script.src = `data/lesson${id}.js`; // 确保你的文件路径是 data/lesson1.js 这样
@@ -388,12 +390,8 @@ async function showDetail(id) {
         }
 
         function logout() { localStorage.removeItem('nce2_user_secret'); location.reload(); }
-     function showHome() { 
-    // 停止音频播放
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
+   function showHome() { 
+    speak(); // 触发清理逻辑，停止所有音频
     
     document.getElementById('home-view').classList.remove('hidden'); 
     document.getElementById('plan-settings').classList.remove('hidden');
