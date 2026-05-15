@@ -55,7 +55,9 @@
             </div>
         </div>
 
-<div id="home-view" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        <div id="plan-settings" class="hidden mb-6"></div>
+
+        <div id="home-view" class="flex flex-col space-y-6"></div>
 
         <div id="detail-view" class="hidden animate-in">
             <button onclick="showHome()" class="mb-5 text-indigo-600 font-bold flex items-center text-sm">
@@ -74,6 +76,7 @@
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentUser = localStorage.getItem('nce2_user_secret');
         let completedLessons = [];
+        let weeklyGoal = parseInt(localStorage.getItem('nce2_weekly_goal')) || 7;
 
         function speak(text) {
             const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
@@ -90,6 +93,7 @@
                 document.getElementById('auth-overlay').classList.remove('hidden');
             } else {
                 document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('plan-settings').classList.remove('hidden');
                 await fetchProgress();
                 renderHome();
             }
@@ -121,125 +125,183 @@
             document.getElementById('sync-status').innerText = `✅ 已同步 (已学 ${completedLessons.length} 课)`;
         }
 
-function renderHome() {
-    const home = document.getElementById('home-view');
-    home.innerHTML = '';
-    
-    // 我们遍历 1 到 96 课
-    for (let i = 1; i <= 96; i++) {
-        const isDone = completedLessons.includes(i);
-        // 从索引文件中获取标题，如果没有（比如 31课以后），就显示 Coming Soon
-        const title = lessonIndex[i] || "Coming Soon...";
-        const isAvailable = !!lessonIndex[i]; // 是否有数据文件
-
-        home.innerHTML += `
-            <div onclick="${isAvailable ? `showDetail(${i})` : ''}" 
-                 class="lesson-card p-4 rounded-2xl border-2 border-slate-100 text-center shadow-sm hover:border-indigo-200 flex flex-col justify-center min-h-[110px] ${isDone ? 'completed' : 'bg-white'} ${!isAvailable ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}">
-                <div class="text-[10px] font-mono mb-1 text-slate-400">Lesson ${i}</div>
-                <div class="text-xs font-bold leading-tight text-slate-700 px-1">${title}</div>
-            </div>`;
-    }
-}
-async function showDetail(id) {
-    // 1. 查找 lessonIndex 确认这一课是否有标题
-    if (!lessonIndex[id]) {
-        alert("本课内容正在准备中...");
-        return;
-    }
-
-    // 2. 动态创建加载脚本
-    const oldScript = document.getElementById('lesson-loader');
-    if (oldScript) oldScript.remove();
-
-    const script = document.createElement('script');
-    script.id = 'lesson-loader';
-    script.src = `data/lesson${id}.js?v=${new Date().getTime()}`;
-
-    script.onload = () => {
-        const data = window.currentLessonData;
-        if (!data) return;
-
-        // --- 修正点：对应你 HTML 中的 ID ---
-        const detailView = document.getElementById('detail-view');
-        const homeView = document.getElementById('home-view');
-        const content = document.getElementById('detail-content');
-
-        // 构建内部 HTML
-        let html = '';
-        
-        // 渲染打卡状态标题
-        const isDone = completedLessons.includes(id);
-        html += `
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
-                    <p class="text-indigo-600 font-medium">${data.title}</p>
-                </div>
-                <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold transition-all ${isDone ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}">
-                    ${isDone ? '✓ 已打卡' : '确认打卡'}
-                </button>
-            </div>
-        `;
-
-        // 1. 原文渲染
-        if (data.textEn && data.textCn) {
-            html += `
-            <div class="mb-8 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm">
-                <h3 class="text-sm font-bold text-indigo-600 mb-3 flex items-center">课文原文 & 译文</h3>
-                <div class="space-y-4">
-                    <p class="text-slate-800 font-serif leading-relaxed text-sm">${data.textEn}</p>
-                    <div class="pt-4 border-t border-indigo-100/50"><p class="text-slate-500 text-xs leading-relaxed">${data.textCn}</p></div>
-                </div>
-            </div>`;
+        function getGroupedLessons() {
+            const groups = [];
+            for (let i = 1; i <= 96; i += weeklyGoal) {
+                const group = [];
+                for (let j = i; j < i + weeklyGoal && j <= 96; j++) {
+                    group.push(j);
+                }
+                groups.push(group);
+            }
+            return groups;
         }
 
-        // 2. 单词表渲染
-        if (data.words && data.words.length > 0) {
-            html += `
-            <div class="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm text-sm">
-                <table class="w-full text-left border-collapse bg-white">
-                    <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase"><th class="p-3">单词</th><th class="p-3 text-right">释义</th></tr>
-                    ${data.words.map(w => `
-                        <tr class="border-t border-slate-50">
-                            <td class="p-3">
-                                <div class="flex items-center">
-                                    <span class="font-bold text-slate-800">${w.word}</span>
-                                    <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="speaker-icon">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                    </button>
+        function setWeeklyGoal() {
+            const num = prompt("你计划每周学习几课？", weeklyGoal);
+            if (num && !isNaN(num)) {
+                const val = parseInt(num);
+                if (val > 0 && val <= 96) {
+                    weeklyGoal = val;
+                    localStorage.setItem('nce2_weekly_goal', weeklyGoal);
+                    renderHome();
+                } else {
+                    alert("请输入 1 到 96 之间的数字");
+                }
+            }
+        }
+
+        function renderHome() {
+            const home = document.getElementById('home-view');
+            const settings = document.getElementById('plan-settings');
+            
+            // 渲染设置栏
+            settings.innerHTML = `
+                <div class="flex justify-between items-center bg-white/50 p-3 rounded-xl border border-dashed border-slate-200">
+                    <div class="text-sm text-slate-600">
+                        <span class="font-bold text-indigo-600">当前计划：</span>每周学习 <span class="font-mono font-bold">${weeklyGoal}</span> 课
+                    </div>
+                    <button onclick="setWeeklyGoal()" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                        修改计划
+                    </button>
+                </div>
+            `;
+
+            home.innerHTML = '';
+            const groups = getGroupedLessons();
+
+            groups.forEach((group, index) => {
+                const groupCompleted = group.filter(id => completedLessons.includes(id)).length;
+                const progressPercent = Math.round((groupCompleted / group.length) * 100);
+                const isFullyDone = progressPercent === 100;
+
+                let groupHtml = `
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 animate-in">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-lg font-black text-slate-800">第 ${index + 1} 周</h3>
+                                <p class="text-[10px] text-slate-400 font-mono tracking-tighter uppercase">Lessons ${group[0]} - ${group[group.length-1]}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-black ${isFullyDone ? 'text-emerald-500' : 'text-slate-700'}">${progressPercent}%</span>
+                                <div class="w-16 h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                                    <div class="h-full transition-all duration-500 ${isFullyDone ? 'bg-emerald-500' : 'bg-indigo-500'}" style="width: ${progressPercent}%"></div>
                                 </div>
-                                <div class="text-[10px] text-slate-400 font-mono">${w.phonetic || ''}</div>
-                            </td>
-                            <td class="p-3 text-right text-slate-500 italic text-xs">${w.type || ''} ${w.trans}</td>
-                        </tr>
-                    `).join('')}
-                </table>
-            </div>`;
-        }
-
-        // 3. 笔记渲染
-        if (data.sections) {
-            html += `<div class="space-y-4">`;
-            data.sections.forEach(sec => {
-                html += `
-                <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400">
-                    <p class="text-slate-800 italic font-serif mb-1">"${sec.sentence}"</p>
-                    ${sec.notes.map(n => `<p class="text-[11px] text-slate-500 flex items-start mt-1">● ${n}</p>`).join('')}
-                </div>`;
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            ${group.map(id => {
+                                const isDone = completedLessons.includes(id);
+                                const title = lessonIndex[id] || "Coming Soon...";
+                                const isAvailable = !!lessonIndex[id];
+                                return `
+                                    <div onclick="${isAvailable ? `showDetail(${id})` : ''}" 
+                                         class="p-3 rounded-2xl border-2 transition-all flex flex-col justify-center min-h-[75px] text-center
+                                         ${isDone ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-slate-50 border-transparent text-slate-600'} 
+                                         ${!isAvailable ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:border-indigo-200 active:scale-95 cursor-pointer'}">
+                                        <span class="text-[9px] font-mono opacity-50 mb-1">L${id}</span>
+                                        <span class="text-[11px] font-bold leading-tight line-clamp-2">${title}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                home.innerHTML += groupHtml;
             });
-            html += `</div>`;
         }
 
-        // --- 核心切换逻辑 ---
-        content.innerHTML = html;
-        homeView.classList.add('hidden'); // 隐藏列表
-        detailView.classList.remove('hidden'); // 显示详情
-        window.scrollTo(0, 0); // 滚动到顶部
-    };
+        async function showDetail(id) {
+            if (!lessonIndex[id]) return;
 
-    script.onerror = () => alert("加载失败，请检查 data 文件夹。");
-    document.body.appendChild(script);
-}
+            const oldScript = document.getElementById('lesson-loader');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'lesson-loader';
+            script.src = `data/lesson${id}.js?v=${new Date().getTime()}`;
+
+            script.onload = () => {
+                const data = window.currentLessonData;
+                if (!data) return;
+
+                const detailView = document.getElementById('detail-view');
+                const homeView = document.getElementById('home-view');
+                const settings = document.getElementById('plan-settings');
+                const content = document.getElementById('detail-content');
+
+                let html = '';
+                const isDone = completedLessons.includes(id);
+                
+                html += `
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
+                            <p class="text-indigo-600 font-medium">${data.title}</p>
+                        </div>
+                        <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold transition-all ${isDone ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}">
+                            ${isDone ? '✓ 已打卡' : '确认打卡'}
+                        </button>
+                    </div>
+                `;
+
+                if (data.textEn && data.textCn) {
+                    html += `
+                    <div class="mb-8 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm">
+                        <h3 class="text-sm font-bold text-indigo-600 mb-3 flex items-center">课文原文 & 译文</h3>
+                        <div class="space-y-4">
+                            <p class="text-slate-800 font-serif leading-relaxed text-sm">${data.textEn}</p>
+                            <div class="pt-4 border-t border-indigo-100/50"><p class="text-slate-500 text-xs leading-relaxed">${data.textCn}</p></div>
+                        </div>
+                    </div>`;
+                }
+
+                if (data.words && data.words.length > 0) {
+                    html += `
+                    <div class="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm text-sm">
+                        <table class="w-full text-left border-collapse bg-white">
+                            <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase"><th class="p-3">单词</th><th class="p-3 text-right">释义</th></tr>
+                            ${data.words.map(w => `
+                                <tr class="border-t border-slate-50">
+                                    <td class="p-3">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-slate-800">${w.word}</span>
+                                            <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="speaker-icon">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            </button>
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 font-mono">${w.phonetic || ''}</div>
+                                    </td>
+                                    <td class="p-3 text-right text-slate-500 italic text-xs">${w.type || ''} ${w.trans}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>`;
+                }
+
+                if (data.sections) {
+                    html += `<div class="space-y-4">`;
+                    data.sections.forEach(sec => {
+                        html += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-400">
+                            <p class="text-slate-800 italic font-serif mb-1">"${sec.sentence}"</p>
+                            ${sec.notes.map(n => `<p class="text-[11px] text-slate-500 flex items-start mt-1">● ${n}</p>`).join('')}
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                content.innerHTML = html;
+                homeView.classList.add('hidden');
+                settings.classList.add('hidden');
+                detailView.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            };
+
+            script.onerror = () => alert("加载失败，请检查 data 文件夹。");
+            document.body.appendChild(script);
+        }
+
         async function toggleDone(id) {
             const btn = document.getElementById('check-btn');
             btn.innerText = "请求中...";
@@ -266,7 +328,12 @@ async function showDetail(id) {
         }
 
         function logout() { localStorage.removeItem('nce2_user_secret'); location.reload(); }
-        function showHome() { document.getElementById('home-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); renderHome(); }
+        function showHome() { 
+            document.getElementById('home-view').classList.remove('hidden'); 
+            document.getElementById('plan-settings').classList.remove('hidden');
+            document.getElementById('detail-view').classList.add('hidden'); 
+            renderHome(); 
+        }
 
         init();
     </script>
