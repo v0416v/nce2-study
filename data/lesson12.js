@@ -1,57 +1,18 @@
 window.currentLessonData = {
-    "title": "Goodbye and good luck",
+    "title": "Goodbye and Good Luck",
+    "textEn": "Our neighbor, Captain Alison, will sail from Portsmouth tomorrow. We shall meet him at the harbour early in the morning. He will sail away to the South of France.",
+    "textCn": "我们的邻居艾利森船长明天将从朴次茅斯启航。我们将一大早在港口为他送行。他将驶往法国南部。",
     "words": [
-        {
-            "word": "luck",
-            "phonetic": "/lʌk/",
-            "type": "n.",
-            "trans": "运气，幸运"
-        },
-        {
-            "word": "captain",
-            "phonetic": "/ˈkæptɪn/",
-            "type": "n.",
-            "trans": "船长"
-        },
-        {
-            "word": "sail",
-            "phonetic": "/seɪl/",
-            "type": "v.",
-            "trans": "航行"
-        },
-        {
-            "word": "harbour",
-            "phonetic": "/ˈhɑːbə/",
-            "type": "n.",
-            "trans": "港口"
-        },
-        {
-            "word": "proud",
-            "phonetic": "/praʊd/",
-            "type": "adj.",
-            "trans": "自豪的"
-        },
-        {
-            "word": "important",
-            "phonetic": "/ɪmˈpɔːtənt/",
-            "type": "adj.",
-            "trans": "重要的"
-        }
+        { "word": "captain", "phonetic": "/ˈkæptɪn/", "type": "n.", "trans": "船长" },
+        { "word": "sail", "phonetic": "/seɪl/", "type": "v.", "trans": "航行" },
+        { "word": "harbour", "phonetic": "/ˈhɑːbə/", "type": "n.", "trans": "港口" }
     ],
     "sections": [
         {
-            "sentence": "We'll meet him at the harbour early in the morning.",
+            "sentence": "We shall meet him at the harbour early in the morning.",
             "notes": [
-                "<b>will meet</b>: 一般将来时，表示计划要做的事",
-                "<b>at the harbour</b>: 介词短语作地点状语",
-                "<b>early in the morning</b>: 清晨"
-            ]
-        },
-        {
-            "sentence": "He will be away for two months.",
-            "notes": [
-                "<b>will be away</b>: 一般将来时，离开",
-                "<b>for two months</b>: 介词短语表示持续时间"
+                "<b>shall</b>: 第一人称将来时",
+                "<b>early in the morning</b>: 一大早"
             ]
         }
     ]
