@@ -1,5 +1,7 @@
 window.currentLessonData = {
     "title": "A glass envelope",
+    "textEn": "My daughter, Jane, never dreamed of receiving a letter from a girl of her own age in Holland. Last year, we were travelling across the Channel and Jane put a piece of paper with her name and address on it into a bottle. She threw the bottle into the sea. She never thought of it again. Ten months later, she received a letter from a girl in Holland. Both girls write to each other regularly now. However, they have decided to use the post office. Letters will cost a little more, but they will certainly travel faster.",
+"textCn": "我的女儿简从未想过会收到一封来自荷兰的、与她同龄的女孩的信。去年，我们横渡英吉利海峡时，简把一张写有她姓名和地址的纸条放进了一个瓶子里。她把瓶子扔进了大海。此后她再也没想过这件事。十个月后，她收到了一位荷兰女孩的来信。现在这两个女孩经常互相写信。不过，她们已决定使用邮局。寄信会多花一点钱，但肯定传递得更快。",
     "words": [
         {
             "word": "dream",
