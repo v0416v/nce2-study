@@ -1,5 +1,7 @@
 window.currentLessonData = {
     "title": "The best art critics",
+    "textEn": "I am an art student and I paint a lot of pictures. Many people pretend that they understand modern art. They always tell you what a picture is 'about'. Of course, many pictures are not 'about' anything. They are just pretty patterns. We like them in the same way that we like pretty curtain material. I think that young children often appreciate modern pictures better than anyone else. They notice more. My sister is only seven, but she always tells me whether my pictures are good or not. She came into my room yesterday. 'What are you doing?' she asked. 'I'm hanging this picture on the wall,' I answered. 'It's a new one. Do you like it?' She looked at it critically for a moment. 'It's all right,' she said, 'but isn't it upside down?' I looked at it again. She was right! It was!",
+"textCn": "我是一个学艺术的学生，画了很多画。许多人假装自己懂现代艺术。他们总是告诉你一幅画是“关于”什么的。当然，很多画什么也不“关于”，它们只是漂亮的图案。我们喜欢它们，就像喜欢漂亮的窗帘布一样。我认为小孩子往往比任何人都更能欣赏现代绘画。他们观察得更仔细。我的妹妹只有七岁，但她总能告诉我我的画好不好。昨天她走进我的房间。“你在干什么？”她问。“我正在把这幅画挂到墙上，”我回答，“这是一幅新画。你喜欢吗？”她挑剔地看了一会儿。“还行吧，”她说，“但它是不是挂倒了？”我又看了看。她是对的！确实是挂倒了！",
     "words": [
         {
             "word": "art",
