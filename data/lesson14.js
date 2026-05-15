@@ -1,7 +1,7 @@
 window.currentLessonData = {
     "title": "Do you speak English?",
-    "textEn": "I had an amusing experience in France. I did not speak French and a young man did not speak English. We communicated by gestures.",
-    "textCn": "我在法国有一次有趣的经历。我不会法语，那个人不会英语，我们只能用手势交流。",
+"textEn": "I had an amusing experience last year. After I had left a small village in the south of France, I drove on to the next town. On the way, a young man waved to me. I stopped and he asked me for a lift. As soon as he had got into the car, I said good morning to him in French and he replied in the same language. Apart from a few words, I do not know any French at all. Neither of us spoke during the journey. I had nearly reached the town, when the young man suddenly said, very slowly, 'Do you speak English?' As I soon learnt, he was English himself!",
+"textCn": "去年我有过一次有趣的经历。在离开法国南部的一个小村庄后，我继续开车前往下一个城镇。途中，一个年轻男子向我招手。我停下来，他请求搭车。他一上车，我就用法语向他道早上好，他也用同样的语言回答我。除了几个单词外，我根本不会法语。旅途中我们谁也没说话。我快要到达那个城镇时，那个年轻人突然用很慢的语速说道：“你会说英语吗？”我很快得知，他自己就是英国人！",
     "words": [
         {
             "word": "amusing",
