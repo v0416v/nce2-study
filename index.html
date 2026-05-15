@@ -79,16 +79,21 @@
         let completedLessons = [];
         let weeklyGoal = parseInt(localStorage.getItem('nce2_weekly_goal')) || 7;
 
-       function speak(text) {
-    // 强制停止并清理旧音频
+      function speak(text) {
+    // 1. 强制停止浏览器自带的系统语音 (SpeechSynthesis)
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+
+    // 2. 强制停止并清理 Audio 对象
     if (currentAudio) {
         currentAudio.pause();
-        currentAudio.src = ""; // 强制断开音频源链接
-        currentAudio.load();   // 强制重置
+        currentAudio.src = ""; 
+        currentAudio.load();
         currentAudio = null;
     }
 
-    // 如果文本为空则只执行停止操作
+    // 如果没有传入 text，说明只是想执行“停止”动作
     if (!text) return;
 
     const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
@@ -96,9 +101,10 @@
     currentAudio = audio;
 
     audio.play().catch(e => {
-        // 退而求其次使用系统语音
+        console.log("Audio play failed, falling back to System TTS");
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-US';
+        msg.rate = 0.9; // 稍微放慢一点点速度，听感更好
         window.speechSynthesis.speak(msg);
     });
 }
