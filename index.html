@@ -70,6 +70,7 @@
     <script src="lesson-index.js"></script>
 
     <script>
+        let currentAudio = null; // 用于全局追踪正在播放的音频
         const SUPABASE_URL = 'https://nblwcljnherlbhngeabw.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibHdjbGpuaGVybGJobmdlYWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzY5MDAsImV4cCI6MjA5NDMxMjkwMH0.ngx8sAJxxz2GFk3jWJDeaKDzq5nWfYBY1im1gAPkGfI'; 
         
@@ -79,14 +80,22 @@
         let weeklyGoal = parseInt(localStorage.getItem('nce2_weekly_goal')) || 7;
 
         function speak(text) {
-            const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
-            const audio = new Audio(audioUrl);
-            audio.play().catch(e => {
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'en-US';
-                window.speechSynthesis.speak(msg);
-            });
-        }
+    // 如果有正在播放的音频，立即停止并销毁
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
+    const audio = new Audio(audioUrl);
+    currentAudio = audio; // 记录当前音频
+
+    audio.play().catch(e => {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+    });
+}
 
         async function init() {
             if (!currentUser) {
@@ -229,9 +238,15 @@
         }
 
 async function showDetail(id) {
-    window.scrollTo(0, 0); // 每次切换课程自动回到顶部
-    if (!lessonIndex[id]) return;
+    // 切换课程时停止音频播放
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
 
+    window.scrollTo(0, 0);
+    if (!lessonIndex[id]) return;
+    // ... 后面的逻辑保持不变
     // --- 核心修复：创建并配置脚本加载 ---
     const script = document.createElement('script');
     script.src = `data/lesson${id}.js`; // 确保你的文件路径是 data/lesson1.js 这样
@@ -373,13 +388,18 @@ async function showDetail(id) {
         }
 
         function logout() { localStorage.removeItem('nce2_user_secret'); location.reload(); }
-        function showHome() { 
-            document.getElementById('home-view').classList.remove('hidden'); 
-            document.getElementById('plan-settings').classList.remove('hidden');
-            document.getElementById('detail-view').classList.add('hidden'); 
-            renderHome(); 
-        }
-
+     function showHome() { 
+    // 停止音频播放
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    
+    document.getElementById('home-view').classList.remove('hidden'); 
+    document.getElementById('plan-settings').classList.remove('hidden');
+    document.getElementById('detail-view').classList.add('hidden'); 
+    renderHome(); 
+}
         init();
     </script>
 </body>
