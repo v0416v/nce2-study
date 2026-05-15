@@ -228,39 +228,53 @@
             });
         }
 
-        async function showDetail(id) {
-            if (!lessonIndex[id]) return;
+async function showDetail(id) {
+    window.scrollTo(0, 0); // 每次切换课程自动回到顶部
+    if (!lessonIndex[id]) return;
+    // ...
 
-            const oldScript = document.getElementById('lesson-loader');
-            if (oldScript) oldScript.remove();
+    // ... 前面的脚本加载逻辑保持不变 ...
 
-            const script = document.createElement('script');
-            script.id = 'lesson-loader';
-            script.src = `data/lesson${id}.js?v=${new Date().getTime()}`;
+    script.onload = () => {
+        const data = window.currentLessonData;
+        if (!data) return;
 
-            script.onload = () => {
-                const data = window.currentLessonData;
-                if (!data) return;
+        const detailView = document.getElementById('detail-view');
+        const homeView = document.getElementById('home-view');
+        const settings = document.getElementById('plan-settings');
+        const content = document.getElementById('detail-content');
 
-                const detailView = document.getElementById('detail-view');
-                const homeView = document.getElementById('home-view');
-                const settings = document.getElementById('plan-settings');
-                const content = document.getElementById('detail-content');
+        let html = '';
+        const isDone = completedLessons.includes(id);
+        
+        // --- 新增：上下课跳转逻辑 ---
+        const prevId = id > 1 ? id - 1 : null;
+        const nextId = id < 96 && lessonIndex[id + 1] ? id + 1 : null;
 
-                let html = '';
-                const isDone = completedLessons.includes(id);
+        html += `
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showHome()" class="text-indigo-600 font-bold flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 返回
+                </button>
                 
-                html += `
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
-                            <p class="text-indigo-600 font-medium">${data.title}</p>
-                        </div>
-                        <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold transition-all ${isDone ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}">
-                            ${isDone ? '✓ 已打卡' : '确认打卡'}
-                        </button>
-                    </div>
-                `;
+                <div class="flex space-x-2">
+                    ${prevId ? `<button onclick="showDetail(${prevId})" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-indigo-50 hover:text-indigo-600 transition">← 上一课</button>` : ''}
+                    ${nextId ? `<button onclick="showDetail(${nextId})" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-indigo-50 hover:text-indigo-600 transition">下一课 →</button>` : ''}
+                </div>
+            </div>
+
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800">Lesson ${id}</h2>
+                    <p class="text-indigo-600 font-medium">${data.title}</p>
+                </div>
+                <button onclick="toggleDone(${id})" id="check-btn" class="px-6 py-2 rounded-full font-bold transition-all ${isDone ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white'}">
+                    ${isDone ? '✓ 已打卡' : '确认打卡'}
+                </button>
+            </div>
+        `;
+
+        // ... 后面的原文、单词、笔记渲染逻辑保持不变 ...
 
                 if (data.textEn && data.textCn) {
                     html += `
