@@ -79,34 +79,39 @@
         let completedLessons = [];
         let weeklyGoal = parseInt(localStorage.getItem('nce2_weekly_goal')) || 7;
 
-      function speak(text) {
-    // 1. 强制停止浏览器自带的系统语音 (SpeechSynthesis)
+   function speak(text) {
+    // 1. 立即停止系统语音
     if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
     }
 
-    // 2. 强制停止并清理 Audio 对象
+    // 2. 预处理音频对象
     if (currentAudio) {
         currentAudio.pause();
-        currentAudio.src = ""; 
-        currentAudio.load();
         currentAudio = null;
     }
 
-    // 如果没有传入 text，说明只是想执行“停止”动作
     if (!text) return;
 
+    // 3. 关键点：在手机端，Audio 对象必须在点击的瞬间被创建并立即加载
     const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=1`;
-    const audio = new Audio(audioUrl);
+    const audio = new Audio();
+    audio.src = audioUrl;
+    
     currentAudio = audio;
 
-    audio.play().catch(e => {
-        console.log("Audio play failed, falling back to System TTS");
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-US';
-        msg.rate = 0.9; // 稍微放慢一点点速度，听感更好
-        window.speechSynthesis.speak(msg);
-    });
+    // 4. 使用更加显式的 play 调用
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.error("有道音频播放失败:", error);
+            // 降级方案：系统 TTS
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'en-US';
+            window.speechSynthesis.speak(msg);
+        });
+    }
 }
         async function init() {
             if (!currentUser) {
