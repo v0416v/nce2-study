@@ -22,11 +22,19 @@
             transition: transform 0.1s;
         }
         .speaker-icon:active { transform: scale(1.2); }
+  /* 标题栏平滑过渡效果 */
+        header {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* 当加上这个类时，标题栏向上位移 100% 从而隐藏 */
+        .header-hidden {
+            transform: translateY(-100%);
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-    <header class="bg-slate-800 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+   <header id="main-header" class="bg-slate-800 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-bold">新概念英语第二册学习</h1>
             <div id="sync-status" class="text-[10px] text-emerald-400 font-mono">正在连接云端...</div>
@@ -108,7 +116,7 @@ function speak(text) {
         });
     }
 }
-        async function init() {
+        async function () {
             if (!currentUser) {
                 document.getElementById('auth-overlay').classList.remove('hidden');
             } else {
@@ -400,7 +408,7 @@ async function showDetail(id) {
 
         function login() {
             const val = document.getElementById('user-secret').value.trim();
-            if(val) { currentUser = val; localStorage.setItem('nce2_user_secret', val); init(); }
+            if(val) { currentUser = val; localStorage.setItem('nce2_user_secret', val); (); }
         }
 
         function logout() { localStorage.removeItem('nce2_user_secret'); location.reload(); }
@@ -412,6 +420,27 @@ async function showDetail(id) {
     document.getElementById('detail-view').classList.add('hidden'); 
     renderHome(); 
 }
+      // 智能标题栏隐藏逻辑
+        let lastScrollTop = 0;
+        const header = document.getElementById('main-header');
+
+        window.addEventListener('scroll', function() {
+            // 获取当前滚动高度
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // 只有当滚动超过一定距离（比如 100px）时才触发隐藏，防止顶部抖动
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // 向下滑动 -> 隐藏
+                header.classList.add('header-hidden');
+            } else {
+                // 向上滑动 -> 显示
+                header.classList.remove('header-hidden');
+            }
+            
+            // 更新最后滚动位置，scrollTop 小于 0 是为了兼容 iOS 弹性滚动
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
+        }, false);
+        
         init();
     </script>
 </body>
